@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
-
 import javax.enterprise.context.ApplicationScoped;
 
 import io.vertx.core.json.JsonObject;
@@ -14,28 +13,14 @@ import org.apache.camel.Message;
 import org.apache.camel.builder.RouteBuilder;
 
 @ApplicationScoped
-public class Routes extends RouteBuilder {
+public class AggregatedSalesRoute extends RouteBuilder {
 
     @SuppressWarnings({"unchecked"})
     @Override
     public void configure() throws Exception {
-        from("kafka:{{kafka.customer.topic.name}}?groupId={{kafka.customer.consumer.group}}" +
-                "&autoOffsetReset=earliest")
-                .routeId("kafka2PostgresqlCustomer")
-                .unmarshal().json()
-                .log(LoggingLevel.DEBUG, "Customer event received: ${body}")
-                .choice()
-                .when().jsonpath("$..[?(@.op == 'c')]").log("Create")
-                .setBody(simple("INSERT INTO customer (customer_id, name, status) VALUES (${body[after][customer_id]}, '${body[after][name]}', '${body[after][status]}');"))
-                .when().jsonpath("$..[?(@.op == 'u')]").log("Update")
-                .setBody(simple("UPDATE customer SET name = '${body[after][name]}', status = '${body[after][status]}' WHERE customer_id = ${body[after][customer_id]};"))
-                .end()
-                .log(LoggingLevel.DEBUG, "SQL statement: ${body}")
-                .to("jdbc:cashback");
-
         from("kafka:{{kafka.sale.topic.name}}?groupId={{kafka.sale.consumer.group}}" +
                 "&autoOffsetReset=earliest")
-                .routeId("kafka2PostgresqlSale")
+                .routeId("kafka2PostgresqlAggregatedSale")
                 .unmarshal().json()
                 .log(LoggingLevel.DEBUG, "Sale event received: ${body}")
                 .process(exchange -> {
