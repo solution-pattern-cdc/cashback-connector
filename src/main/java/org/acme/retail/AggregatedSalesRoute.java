@@ -20,7 +20,7 @@ public class AggregatedSalesRoute extends RouteBuilder {
     @SuppressWarnings({"unchecked"})
     @Override
     public void configure() throws Exception {
-        from("kafka:{{kafka.sale.topic.name}}?groupId={{kafka.sale.consumer.group}}" +
+        from("kafka:{{kafka.sale_aggregated.topic.name}}?groupId={{kafka.sale_aggregated.consumer.group}}" +
                 "&autoOffsetReset=earliest")
                 .routeId("kafka2PostgresqlAggregatedSale")
                 .unmarshal().json()
@@ -74,7 +74,7 @@ public class AggregatedSalesRoute extends RouteBuilder {
                     in.removeHeader("op");
                     in.removeHeader("total");
                 })
-                .to("kafka:{{kafka.expense_created.topic.name}}");
+                .to("kafka:{{kafka.expense_event.topic.name}}");
     }
 
     private String transformEpochToDateTime(long epoch) {
