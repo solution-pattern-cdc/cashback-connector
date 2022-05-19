@@ -47,8 +47,8 @@ public class CustomerRouteTest extends CamelTestSupport {
 
         adviceWithRoute();
 
-        getMockEndpoint("mock:jdbc:cashback").expectedMessageCount(0);
-        template.sendBody("direct:start", getReadCustomerChangeEvent());
+        getMockEndpoint("mock:jdbc:cashback").expectedBodiesReceived("INSERT INTO customer (customer_id, name, status) VALUES (1000, 'Kasey Keith', 'silver');");
+        template.sendBody("direct:start", getCreateCustomerChangeEvent());
 
         assertMockEndpointsSatisfied();
     }
